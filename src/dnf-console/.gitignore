@@ -15,6 +15,3 @@
 # Built Visual Studio Code Extensions
 *.vsix
 .idea
-
-data
-log
