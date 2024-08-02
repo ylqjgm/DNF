@@ -1,0 +1,2 @@
+src/dnf-console/main filter=lfs diff=lfs merge=lfs -text
+src/other/Script.pvf filter=lfs diff=lfs merge=lfs -text
