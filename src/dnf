@@ -1,0 +1,155 @@
+#!/bin/sh
+
+case $1 in
+  'start')
+    # clear pid and log
+    find /home/neople/ -name '*.log' -type f -print -exec rm -f {} \;
+    find /home/neople/ -name '*.pid' -type f -print -exec rm -f {} \;
+    find /home/neople/ -name 'core.*' -type f -print -exec rm -f {} \;
+
+    # gate
+    cd /root
+    rm -f /root/gate.log
+    ./GateRestart
+    
+    # stun
+    cd /home/neople/stun
+    chmod 777 *
+    ./df_stun_r start &
+
+    # monitor
+    cd /home/neople/monitor
+    chmod 777 *
+    LD_PRELOAD=/lib/libhook.so ./df_monitor_r mnt_siroco start &
+
+    # manager
+    cd /home/neople/manager
+    chmod 777 *
+    LD_PRELOAD=/lib/libhook.so ./df_manager_r manager start &
+    
+    # relay
+    cd /home/neople/relay
+    chmod 777 *
+    ./df_relay_r relay_200 start &
+    
+    # bridge
+    cd /home/neople/bridge
+    chmod 777 *
+    LD_PRELOAD=/lib/libhook.so ./df_bridge_r bridge start &
+    # channel
+    cd /home/neople/channel
+    chmod 777 *
+    LD_PRELOAD=/lib/libhook.so ./df_channel_r channel start &
+    
+    # dbmw_guild
+    cd /home/neople/dbmw_guild
+    chmod 777 *
+    LD_PRELOAD=/lib/libhook.so ./df_dbmw_r dbmw_gld_siroco start &
+    
+    # dbmw_mnt
+    cd /home/neople/dbmw_mnt
+    chmod 777 *
+    LD_PRELOAD=/lib/libhook.so ./df_dbmw_r dbmw_mnt_siroco start &
+    
+    # dbmw_stat
+    cd /home/neople/dbmw_stat
+    chmod 777 *
+    LD_PRELOAD=/lib/libhook.so ./df_dbmw_r dbmw_stat_siroco start &
+    
+    # auction
+    cd /home/neople/auction
+    chmod 777 *
+    ./df_auction_r ./cfg/auction_siroco.cfg start ./df_auction_r &
+    
+    # point
+    cd /home/neople/point
+    chmod 777 *
+    ./df_point_r ./cfg/point_siroco.cfg start df_point_r &
+    
+    # guild
+    cd /home/neople/guild
+    chmod 777 *
+    LD_PRELOAD=/lib/libhook.so ./df_guild_r gld_siroco start &
+    
+    # statics
+    cd /home/neople/statics
+    chmod 777 *
+    LD_PRELOAD=/lib/libhook.so ./df_statics_r stat_siroco start &
+    
+    # coserver
+    cd /home/neople/coserver
+    chmod 777 *
+    LD_PRELOAD=/lib/libhook.so ./df_coserver_r coserver start &
+    
+    # community
+    cd /home/neople/community
+    chmod 777 *
+    ./df_community_r community start &
+    
+    # gunnersvr
+    cd /home/neople/secsvr/gunnersvr
+    chmod 777 *
+    ./gunnersvr -t30 -i1  &
+    
+    # zergsvr
+    cd /home/neople/secsvr/zergsvr
+    chmod 777 *
+    ./secagent  &
+    ./zergsvr -t30 -i1  &
+    
+    # game
+    cd /home/neople/game
+    chmod 777 *
+    sleep 2
+    LD_PRELOAD=/lib/libhook.so ./df_game_r siroco11 start &
+    sleep 2
+    LD_PRELOAD=/lib/libhook.so ./df_game_r siroco52 start &
+    
+    # dnf-console
+    cd /home/dnf-console
+    rm -f /home/dnf-console/log/*
+    ./main -k start
+    ;;
+
+  'stop')
+    killall -9 df_stun_r
+    killall -9 df_monitor_r
+    killall -9 df_manager_r
+    killall -9 df_relay_r
+    killall -9 df_bridge_r
+    killall -9 df_channel_r
+    killall -9 df_dbmw_r
+    killall -9 df_auction_r
+    killall -9 df_point_r
+    killall -9 df_guild_r
+    killall -9 df_statics_r
+    killall -9 df_coserver_r
+    killall -9 df_community_r
+    killall -9 gunnersvr
+    killall -9 zergsvr
+    killall -9 df_game_r
+    killall -9 secagent
+    cd /root
+    ./GateStop
+    cd /home/dnf-console
+    ./main -k stop
+    # clear
+    find /home/neople/ -name '*.log' -type f -print -exec rm -f {} \;
+    find /home/neople/ -name '*.pid' -type f -print -exec rm -f {} \;
+    find /home/neople/ -name 'core.*' -type f -print -exec rm -f {} \;
+    rm -f /root/gate.log
+    rm -f /home/dnf-console/log/*
+    ;;
+
+  'restart')
+    $0 stop
+    $0 start
+    ;;
+    *)
+      # usage
+      echo "Usage: $0  {start|stop|restart}  [ dnf server ]"
+      exit 1
+    ;;
+esac
+
+exit 0

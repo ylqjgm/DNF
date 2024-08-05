@@ -83,8 +83,20 @@ while :; do echo
   fi
 done
 
+# 解压
+cd ${ROOT_PWD}/src
+tar zxf GeoIP-1.4.8.tar.gz
+tar zxf dnf-console.tar.gz
+tar zxf dp2.tar.gz
+tar zxf lib.tar.gz
+tar zxf neople.tar.gz
+tar zxf other.tar.gz
+tar zxf root.tar.gz
+tar zxf soft.tar.gz
+tar zxf sql.tar.gz
+
 # 密码加密
-cp -rf ${ROOT_PWD}/src/TeaEncrypt /
+cp -rf ${ROOT_PWD}/src/soft/TeaEncrypt /
 chmod +x /TeaEncrypt
 DEC_DB_GAME=`/TeaEncrypt ${DB_GAME}`
 
@@ -103,10 +115,10 @@ yum clean all
 yum update -y
 
 # 删除mariadb
-yum remove mariadb-libs -y
+yum remove mariadb* mysql* -y
 
 # 安装必要组件
-yum install -y gcc gcc-c++ make automake zlib-devel openssl openssl-devel libssl.so.6 initscripts
+yum install -y gcc gcc-c++ make automake zlib-devel openssl openssl-devel libssl.so.6 initscripts psmisc
 ln -sf /usr/lib64/libssl.so.10 /usr/lib64/libssl.so.6
 ln -sf /usr/lib64/libcrypto.so.10 /usr/lib64/libcrypto.so.6
 
@@ -114,12 +126,10 @@ ln -sf /usr/lib64/libcrypto.so.10 /usr/lib64/libcrypto.so.6
 cp -r ${ROOT_PWD}/src/GeoIP-1.4.8 /home/GeoIP-1.4.8
 cd /home/GeoIP-1.4.8
 chmod +x ./configure
-./configure
-make
-make install
+./configure && make && make install
 
 # 安装mysql
-cd ${ROOT_PWD}/src
+cd ${ROOT_PWD}/src/soft
 rpm -ivh MySQL-shared-compat-5.0.95-1.rhel5.x86_64.rpm
 rpm -ivh MySQL-devel-community-5.0.95-1.rhel5.x86_64.rpm
 rpm -ivh MySQL-client-community-5.0.95-1.rhel5.x86_64.rpm
@@ -128,8 +138,8 @@ service mysql stop
 yum clean all
 
 # mysql 初始化
-chmod 777 -R /var/lib/mysql
 rm -rf /var/lib/mysql/*
+chmod 777 -R /var/lib/mysql
 mysql_install_db --user=mysql
 service mysql start
 
@@ -229,11 +239,11 @@ mkdir -p /home/temp
 cp -r ${ROOT_PWD}/src/neople /home/temp/neople
 cp -r ${ROOT_PWD}/src/root /home/temp/root
 cp -r ${ROOT_PWD}/src/dp2 /dp2
+rm -f /dp2/df_game_r.lua
 cp ${ROOT_PWD}/src/other/df_game_r.lua /dp2/
 cp -rf ${ROOT_PWD}/src/lib/* /lib/
 rm -rf /lib/libGeoIP.so.1
 cp -f /dp2/libGeoIP.so.1 /lib/libGeoIP.so.1
-mkdir -p /home/neople
 
 # 清理无用文件
 rm -rf /root/DnfGateServer
@@ -244,7 +254,7 @@ rm -rf /root/stop
 rm -rf /root/libhook.so
 rm -rf /root/Config.ini
 rm -rf /root/privatekey.pem
-rm -rf /dp2/df_game_r.lua
+# rm -rf /dp2/df_game_r.lua
 
 
 # 替换内容
@@ -285,12 +295,17 @@ cd /home/dnf-console
 chmod +x ./main
 ./main -i
 
+# 添加启动项
+cp ${ROOT_PWD}/src/dnf /etc/init.d/dnf
+chmod +x /etc/init.d/dnf
+chkconfig dnf on
+chkconfig mysql on
+
 # 清理文件
 cd /root
 rm -rf /home/temp
 rm -rf ${ROOT_PWD}
 
 # 启动
-chkconfig mysql on
-cd /root
-./run
+service mysql restart
+service dnf restart

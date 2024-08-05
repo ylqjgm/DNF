@@ -3,3 +3,5 @@ src/other/Script.pvf filter=lfs diff=lfs merge=lfs -text
 src/sql/d_taiwan.sql filter=lfs diff=lfs merge=lfs -text
 src/sql/taiwan_cain_log.sql filter=lfs diff=lfs merge=lfs -text
 src/sql/tw.sql filter=lfs diff=lfs merge=lfs -text
+src/neople.tar.gz filter=lfs diff=lfs merge=lfs -text
+src/other.tar.gz filter=lfs diff=lfs merge=lfs -text
